@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>まるチャレ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- レスポンシブ対応 -->
+  
+  <!-- ファビコンの追加 -->
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  
+  <!-- スタイルシート -->
+  <style>
+    /* 全体の背景色を薄いグレーに設定 */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* ヘッダーのスタイル */
+    header {
+      width: 100%;
+      background-color: #ffffff;
+      padding: 20px 0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    /* ロゴ画像のスタイル */
+    #logo {
+      width: 200px;
+      max-width: 80%;
+      height: auto;
+    }
+
+    /* メインコンテンツのスタイル */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 800px; /* 最大幅を設定 */
+    }
+
+    /* タイトルのスタイル */
+    main h1 {
+      font-size: 2em;
+      margin-bottom: 10px;
+      color: #333333;
+      text-align: center;
+    }
+
+    /* 説明文のスタイル */
+    main p {
+      font-size: 1.1em;
+      color: #555555;
+      max-width: 600px;
+      margin-bottom: 20px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    /* Canvasのスタイル */
+    #canvas {
+      width: 100%;
+      max-width: 500px; /* 最大幅を設定 */
+      height: auto;
+      aspect-ratio: 1 / 1; /* 正方形を維持 */
+      border: 2px solid #cccccc;
+      border-radius: 10px;
+      background-color: #ffffff;
+      cursor: crosshair;
+      touch-action: none; /* タッチスクロールやピンチ拡大を抑制 */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* スコアとメッセージのスタイル */
+    #score-container {
+      margin-top: 20px;
+      padding: 20px 40px;
+      background: linear-gradient(135deg, #f06, #f79);
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      display: inline-block;
+      transition: transform 0.3s ease, background 0.3s ease;
+      color: #ffffff;
+      font-size: 2em;
+      font-weight: bold;
+      position: relative;
+      animation: fadeIn 1s ease forwards;
+    }
+
+    /* スコアの数字 */
+    #score {
+      color: #ffffff;
+    }
+
+    /* スコアの背景パターン */
+    #score-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      pointer-events: none;
+    }
+
+    /* メッセージのスタイル */
+    #message {
+      color: #e74c3c;
+      margin-top: 10px;
+      font-size: 1.1em;
+      text-align: center;
+    }
+
+    /* ボタン群のスタイル */
+    #buttons {
+      margin-top: 25px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      width: 100%;
+      max-width: 600px; /* 最大幅を設定 */
+    }
+
+    /* 各ボタンの共通スタイル */
+    button, a {
+      padding: 12px 24px;
+      font-size: 1em;
+      text-decoration: none;
+      color: #ffffff;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      min-width: 150px;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* リセットボタンのスタイル */
+    #resetButton {
+      background-color: #e74c3c; /* 赤色 */
+    }
+    #resetButton:hover {
+      background-color: #c0392b;
+      transform: scale(1.05);
+    }
+
+    /* ダウンロードボタンのスタイル */
+    #downloadButton {
+      background-color: #4CAF50; /* 緑色 */
+    }
+    #downloadButton:hover {
+      background-color: #45a049;
+      transform: scale(1.05);
+    }
+
+    /* ツイートボタンのスタイル */
+    #tweetButton {
+      background-color: #1DA1F2; /* Twitterブルー */
+    }
+    #tweetButton:hover {
+      background-color: #0d95e8;
+      transform: scale(1.05);
+    }
+
+    /* フッターのスタイル（オプション） */
+    footer {
+      width: 100%;
+      background-color: #ffffff;
+      padding: 10px 0;
+      text-align: center;
+      box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+      font-size: 0.9em;
+      color: #777777;
+    }
+
+    /* アニメーション定義 */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* レスポンシブデザイン */
+    @media (max-width: 768px) {
+      main h1 {
+        font-size: 1.8em;
+      }
+      main p {
+        font-size: 1em;
+        padding: 0 10px;
+      }
+      #canvas {
+        max-width: 90%;
+      }
+      #buttons {
+        flex-direction: column;
+        gap: 15px;
+      }
+      button, a {
+        width: 100%;
+        max-width: 300px;
+      }
+      #logo {
+        width: 150px;
+      }
+
+      /* スコア表示の調整 */
+      #score-container {
+        font-size: 1.8em;
+        padding: 15px 30px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      main h1 {
+        font-size: 1.5em;
+      }
+      main p {
+        font-size: 0.95em;
+      }
+      #buttons {
+        flex-direction: column;
+        gap: 10px;
+      }
+      button, a {
+        padding: 10px 20px;
+        font-size: 0.9em;
+        min-width: unset;
+      }
+      #logo {
+        width: 120px;
+      }
+
+      /* スコア表示の調整 */
+      #score-container {
+        font-size: 1.5em;
+        padding: 10px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- ヘッダーにロゴを配置 -->
+  <header>
+    <img src="まるチャレロゴ.png" alt="まるチャレロゴ" id="logo">
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main>
+    <h1>キャンバスの中心に円を描いてみよう</h1>
+    <p>なるべくキャンバスの赤い点を中心に、ぐるっと一周円を描いてください。スコアが高いほど円に近いよ。</p>
+    <canvas id="canvas" width="500" height="500"></canvas>
+    
+    <!-- スコア表示コンテナ -->
+    <div id="score-container" aria-live="polite">
+      スコア: <span id="score">-- ％</span>
+    </div>
+    
+    <div id="message"></div>
+    <div id="buttons">
+      <button id="resetButton">リセット</button>
+      <button id="downloadButton">画像を保存</button>
+      <a id="tweetButton" href="#" target="_blank" style="display: none;">Xに投稿する</a>
+    </div>
+  </main>
+
+  <!-- フッター（オプション） -->
+  <footer>
+    &copy; 2025 まるチャレ. All rights reserved.
+  </footer>
+
+  <script>
+    // -------------- 1. 初期設定 --------------
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const scoreContainer = document.getElementById('score-container');
+    const scoreDisplay = document.getElementById('score');
+    const messageDisplay = document.getElementById('message');
+    const resetButton = document.getElementById('resetButton');
+    const downloadButton = document.getElementById('downloadButton');
+    const tweetButton = document.getElementById('tweetButton');
+
+    // Canvasの中心座標
+    let cx = canvas.width / 2;
+    let cy = canvas.height / 2;
+
+    // 描画中かどうか
+    let drawing = false;
+    // 描画した座標を格納
+    let points = [];
+
+    // -------------- 2. 初期表示（中心点を描画） --------------
+    drawCenterPoint();
+
+    function drawCenterPoint() {
+      ctx.fillStyle = 'red';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 6, 0, 2 * Math.PI); // 少し大きめの点に変更
+      ctx.fill();
+    }
+
+    // -------------- 3. Pointer Eventsで描画 --------------
+    // 共通: Canvas内の相対座標を取得
+    function getCanvasPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (e.clientX - rect.left) * (canvas.width / rect.width),
+        y: (e.clientY - rect.top) * (canvas.height / rect.height)
+      };
+    }
+
+    // pointerdown: 描画開始
+    canvas.addEventListener('pointerdown', (e) => {
+      drawing = true;
+      points = [];
+      ctx.beginPath();
+      const pos = getCanvasPos(e);
+      ctx.moveTo(pos.x, pos.y);
+      points.push(pos);
+    });
+
+    // pointermove: ドラッグ中なら線を描く
+    canvas.addEventListener('pointermove', (e) => {
+      if (!drawing) return;
+      const pos = getCanvasPos(e);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.strokeStyle = '#333333'; // 線の色を変更
+      ctx.lineWidth = 2; // 線の太さを設定
+      ctx.stroke();
+      points.push(pos);
+    });
+
+    // pointerup: 描画終了 → 円の評価
+    canvas.addEventListener('pointerup', () => {
+      if (drawing) {
+        drawing = false;
+        evaluateCircle();
+        // 次回描画用にパスをリセット
+        ctx.beginPath();
+      }
+    });
+
+    // pointerleave: Canvas外に出た場合も描画終了
+    canvas.addEventListener('pointerleave', () => {
+      if (drawing) {
+        drawing = false;
+        evaluateCircle();
+        ctx.beginPath();
+      }
+    });
+
+    // -------------- 4. リセット機能 --------------
+    resetButton.addEventListener('click', () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawCenterPoint();
+      scoreDisplay.textContent = '-- 点';
+      messageDisplay.textContent = '';
+      points = [];
+      tweetButton.style.display = 'none'; // リセット時にツイートボタンを非表示
+      scoreContainer.style.background = 'linear-gradient(135deg, #f06, #f79)';
+      scoreContainer.style.transform = 'scale(1)';
+    });
+
+    // -------------- 5. 円の評価ロジック --------------
+    function evaluateCircle() {
+      messageDisplay.textContent = '';  // まずはメッセージをクリア
+      if (points.length < 10) {
+        scoreDisplay.textContent = '-- 点';
+        messageDisplay.textContent = '点数が少なすぎて評価できません。';
+        tweetButton.style.display = 'none'; // ツイートボタンを非表示
+        return;
+      }
+
+      // (A) 中心からの距離を測る
+      const distances = points.map(p => {
+        const dx = p.x - cx;
+        const dy = p.y - cy;
+        return Math.sqrt(dx * dx + dy * dy);
+      });
+
+      // (B) 平均半径 r
+      const r = average(distances);
+
+      // (C) 筆跡の長さを測る（連続する2点間の距離を合計）
+      const pathLength = totalPathLength(points);
+
+      // (D) 理想的な円周長
+      const idealCircumference = 2 * Math.PI * r;
+
+      // (E) 「一周に近いか」の判定
+      //     例として「80%～120%の範囲に収まっていればOK」とする
+      //     実際のアプリでは閾値を調整してください
+      const lowerBound = 0.8 * idealCircumference;
+      const upperBound = 1.2 * idealCircumference;
+
+      if (pathLength < lowerBound || pathLength > upperBound) {
+        scoreDisplay.textContent = '-- 点';
+        messageDisplay.textContent = '円周の長さをうまく満たしていません。';
+        tweetButton.style.display = 'none'; // ツイートボタンを非表示
+        return;
+      }
+
+      // (F) 相対誤差（半径で正規化）の計算
+      //     e_i = |(d_i - r)| / r
+      //     => eBar = 平均(e_i)
+      const errors = distances.map(d => Math.abs(d - r) / r);
+      const eBar = average(errors);
+
+      // (G) スコア計算（例： 0～100）
+      //     スコア = 100 * (1 - eBar)
+      //     eBar = 0 => スコア100, eBar = 1 => スコア0
+      let score = 100 * (1 - eBar);
+      if (score < 0) score = 0;  // 下限カット
+
+      // スコアを小数点以下1位までにフォーマット
+      const formattedScore = score.toFixed(1);
+
+      // スコア表示を更新
+      scoreDisplay.textContent = `${formattedScore} ％`;
+
+      // スコア表示にアニメーションを追加
+      scoreContainer.style.transform = 'scale(1.2)';
+      scoreContainer.style.transition = 'transform 0.3s ease, background 0.3s ease';
+      
+      // スコアに応じた色の変更
+      if (score >= 80) {
+        scoreContainer.style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)'; // 緑系
+      } else if (score >= 50) {
+        scoreContainer.style.background = 'linear-gradient(135deg, #f1c40f, #f39c12)'; // 黄系
+      } else {
+        scoreContainer.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)'; // 赤系
+      }
+
+      // 元のサイズに戻す
+      setTimeout(() => {
+        scoreContainer.style.transform = 'scale(1)';
+      }, 300);
+
+      // ツイートボタンのリンクを設定
+      setTweetButton(formattedScore);
+      tweetButton.style.display = 'inline-block'; // ツイートボタンを表示
+
+      // (H) 一定以下(例:30%)の場合はやり直しを促す
+      if (score < 30) {
+        messageDisplay.textContent = 'スコアが低いので、もう一度挑戦してみてください。';
+      }
+    }
+
+    // -------------- 6. ユーティリティ関数群 --------------
+    function average(arr) {
+      if (!arr.length) return 0;
+      const sum = arr.reduce((a, b) => a + b, 0);
+      return sum / arr.length;
+    }
+
+    function totalPathLength(pts) {
+      let length = 0;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const dx = pts[i + 1].x - pts[i].x;
+        const dy = pts[i + 1].y - pts[i].y;
+        length += Math.sqrt(dx * dx + dy * dy);
+      }
+      return length;
+    }
+
+    // -------------- 7. 画像ダウンロード機能 --------------
+    function downloadCanvasImage() {
+      const link = document.createElement('a');
+      link.download = 'myCircle.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    downloadButton.addEventListener('click', () => {
+      if (points.length === 0) {
+        alert("まず円を描いてから画像をダウンロードしてください。");
+        return;
+      }
+      downloadCanvasImage();
+    });
+
+    // -------------- 8. ツイート用Intentリンク生成 --------------
+    function generateTweetLink(score) {
+      const tweetText = `あなたが描いた円は${score}％真円でした！`;
+      const tweetUrl = 'https://dtgrr5e36t4ze.cloudfront.net/Circle_Draw.html'; 
+      const tweetHashtag = 'まるチャレ';
+      const encodedText = encodeURIComponent(tweetText);
+      const encodedUrl = encodeURIComponent(tweetUrl);
+      const encodedHashtag = encodeURIComponent(tweetHashtag);
+      
+      return `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}&hashtags=${encodedHashtag}`;
+    }
+
+    function setTweetButton(score) {
+      const tweetHref = generateTweetLink(score);
+      tweetButton.href = tweetHref;
+      tweetButton.setAttribute('aria-label', 'Xにスコアを投稿する');
+    }
+  </script>
+</body>
+</html>
